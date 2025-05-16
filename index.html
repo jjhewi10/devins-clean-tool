@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Devin's Helpful Sales Tool - Clean Version</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    h2 { margin-top: 30px; }
+    .section { border: 1px solid #ccc; padding: 10px; margin-top: 20px; }
+    input, textarea { width: 100%; margin-top: 5px; }
+    button { margin-top: 10px; margin-right: 10px; }
+    .green { color: green; font-weight: bold; }
+    .red { color: red; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Devin's Helpful Sales Tool (Clean Version)</h1>
+  
+  <div class="section" id="snapshots">
+    <h2>Customer Snapshots</h2>
+    <div id="snapshot-container"></div>
+    <button onclick="addSnapshot()">Add Snapshot Panel</button>
+  </div>
+
+  <div class="section">
+    <h2>Call/Text Tracker</h2>
+    <p>Calls: <span id="callCount">0</span> | Texts: <span id="textCount">0</span></p>
+    <button onclick="track('call')">+1 Call</button>
+    <button onclick="track('text')">+1 Text</button>
+    <button onclick="undo()">Undo</button>
+    <p id="statusText"></p>
+  </div>
+
+  <div class="section">
+    <h2>Units Sold</h2>
+    <p>Tires: <span id="tires">0</span> | Rims: <span id="rims">0</span></p>
+    <button onclick="unit('tires')">+1 Tire</button>
+    <button onclick="unit('rims')">+1 Rim</button>
+    <button onclick="resetUnits()">Reset</button>
+  </div>
+
+  <div class="section">
+    <h2>Daily Checklist</h2>
+    <label><input type="checkbox"> Clean Desk</label><br>
+    <label><input type="checkbox"> 2 Sales</label><br>
+    <label><input type="checkbox"> Follow-ups</label><br>
+    <label><input type="checkbox"> Sweep</label>
+  </div>
+
+  <div class="section">
+    <h2>SMRR Tracker</h2>
+    <p>Daily SMRR Target: $230+</p>
+    <p>Current Streak: <span id="smrrStreak">3</span></p>
+    <p>Highest Streak: <span id="smrrHigh">6</span></p>
+    <p>Nights: <span id="smrrNights">9</span></p>
+  </div>
+
+  <div class="section">
+    <h2>Daily Summary</h2>
+    <p>Tasks Completed: ✅</p>
+    <p>Calls + Texts: <span id="summaryTotal">0</span> / 20</p>
+    <p id="summaryNote"></p>
+  </div>
+
+  <div class="section">
+    <h2>Tire & Rim Fitment Tool (Coming Next)</h2>
+    <p>This section will be interactive in the next build. You’re cleared to begin!</p>
+  </div>
+
+  <script>
+    let callCount = 0, textCount = 0, last = null, tires = 0, rims = 0;
+
+    function track(type) {
+      if (type === 'call') callCount++;
+      if (type === 'text') textCount++;
+      last = type;
+      updateCounts();
+    }
+
+    function undo() {
+      if (last === 'call' && callCount > 0) callCount--;
+      if (last === 'text' && textCount > 0) textCount--;
+      last = null;
+      updateCounts();
+    }
+
+    function updateCounts() {
+      document.getElementById('callCount').innerText = callCount;
+      document.getElementById('textCount').innerText = textCount;
+      const total = callCount + textCount;
+      document.getElementById('summaryTotal').innerText = total;
+      const now = new Date();
+      const hour = now.getHours();
+      if (total >= 20 && hour < 12) {
+        document.getElementById('statusText').innerHTML = '<span class="green">Done</span>';
+      } else if (hour >= 13 && total < 20) {
+        document.getElementById('statusText').innerHTML = '<span class="red">Not Done</span>';
+      } else {
+        document.getElementById('statusText').innerText = '';
+      }
+    }
+
+    function unit(type) {
+      if (type === 'tires') tires++;
+      else rims++;
+      document.getElementById('tires').innerText = tires;
+      document.getElementById('rims').innerText = rims;
+    }
+
+    function resetUnits() {
+      if (confirm("Are you sure?")) {
+        tires = 0; rims = 0;
+        document.getElementById('tires').innerText = 0;
+        document.getElementById('rims').innerText = 0;
+      }
+    }
+
+    function addSnapshot() {
+      const container = document.getElementById('snapshot-container');
+      const div = document.createElement('div');
+      div.className = 'section';
+      div.innerHTML = `
+        <input placeholder="Customer Name"><br>
+        <input placeholder="Phone Number"><br>
+        <input placeholder="Car Info"><br>
+        <input placeholder="Product Info"><br>
+        <input placeholder="Down Payment"><br>
+        <textarea placeholder="Notes"></textarea><br>
+        <button onclick="printSnapshot()">Print Snapshot</button>
+        <button onclick="if(confirm('Are you sure?')) this.parentElement.remove()">Clear</button>
+      `;
+      container.appendChild(div);
+    }
+
+    function printSnapshot() {
+      const quoted = confirm("Was the customer quoted?");
+      const sysQuoted = confirm("Was the customer systematically quoted?");
+      const now = new Date().toLocaleString();
+      alert("Printed\nQuoted: " + quoted + "\nSystematic: " + sysQuoted + "\nTime: " + now);
+      window.print();
+    }
+  </script>
+</body>
+</html>

@@ -3,73 +3,78 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Devin's Helpful Sales Tool - Clean Version</title>
+  <title>Devin's Sales Tool - Final Build</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    h2 { margin-top: 30px; }
-    .section { border: 1px solid #ccc; padding: 10px; margin-top: 20px; }
-    input, textarea { width: 100%; margin-top: 5px; }
-    button { margin-top: 10px; margin-right: 10px; }
+    body { font-family: sans-serif; margin: 10px; padding: 0; }
+    h2 { margin: 10px 0; font-size: 18px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; }
+    .section { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+    input, textarea { width: 100%; margin-top: 4px; }
+    button { margin-top: 6px; margin-right: 5px; }
+    .snapshot { border: 1px solid #999; padding: 8px; margin-bottom: 8px; }
     .green { color: green; font-weight: bold; }
     .red { color: red; font-weight: bold; }
   </style>
 </head>
 <body>
-  <h1>Devin's Helpful Sales Tool (Clean Version)</h1>
-  
-  <div class="section" id="snapshots">
+  <h1>Devin's Helpful Sales Tool</h1>
+
+  <div class="section">
     <h2>Customer Snapshots</h2>
-    <div id="snapshot-container"></div>
-    <button onclick="addSnapshot()">Add Snapshot Panel</button>
+    <div id="snapshot-container" class="grid"></div>
+    <button onclick="addSnapshot()">Add Snapshot</button>
+  </div>
+
+  <div class="grid">
+    <div class="section">
+      <h2>Call/Text Tracker</h2>
+      <p>Calls: <span id="callCount">0</span> | Texts: <span id="textCount">0</span></p>
+      <button onclick="track('call')">+1 Call</button>
+      <button onclick="track('text')">+1 Text</button>
+      <button onclick="undo()">Undo</button>
+      <p id="statusText"></p>
+    </div>
+
+    <div class="section">
+      <h2>Units Sold</h2>
+      <p>Tires: <span id="tires">0</span> | Rims: <span id="rims">0</span></p>
+      <button onclick="unit('tires')">+1 Tire</button>
+      <button onclick="unit('rims')">+1 Rim</button>
+      <button onclick="resetUnits()">Reset</button>
+    </div>
+
+    <div class="section">
+      <h2>SMRR Tracker</h2>
+      <p><label><input type="checkbox" id="smrrHit"> Hit $230 SMRR Goal Today</label></p>
+      <p>Current Streak: <span id="smrrStreak">3</span></p>
+      <p>Highest Streak: <span id="smrrHigh">6</span></p>
+    </div>
+
+    <div class="section">
+      <h2>Today's Tasks</h2>
+      <div id="checklist"></div>
+      <p id="tasksStatus"></p>
+    </div>
   </div>
 
   <div class="section">
-    <h2>Call/Text Tracker</h2>
-    <p>Calls: <span id="callCount">0</span> | Texts: <span id="textCount">0</span></p>
-    <button onclick="track('call')">+1 Call</button>
-    <button onclick="track('text')">+1 Text</button>
-    <button onclick="undo()">Undo</button>
-    <p id="statusText"></p>
-  </div>
-
-  <div class="section">
-    <h2>Units Sold</h2>
-    <p>Tires: <span id="tires">0</span> | Rims: <span id="rims">0</span></p>
-    <button onclick="unit('tires')">+1 Tire</button>
-    <button onclick="unit('rims')">+1 Rim</button>
-    <button onclick="resetUnits()">Reset</button>
-  </div>
-
-  <div class="section">
-    <h2>Daily Checklist</h2>
-    <label><input type="checkbox"> Clean Desk</label><br>
-    <label><input type="checkbox"> 2 Sales</label><br>
-    <label><input type="checkbox"> Follow-ups</label><br>
-    <label><input type="checkbox"> Sweep</label>
-  </div>
-
-  <div class="section">
-    <h2>SMRR Tracker</h2>
-    <p>Daily SMRR Target: $230+</p>
-    <p>Current Streak: <span id="smrrStreak">3</span></p>
-    <p>Highest Streak: <span id="smrrHigh">6</span></p>
-    <p>Nights: <span id="smrrNights">9</span></p>
-  </div>
-
-  <div class="section">
-    <h2>Daily Summary</h2>
-    <p>Tasks Completed: ✅</p>
-    <p>Calls + Texts: <span id="summaryTotal">0</span> / 20</p>
-    <p id="summaryNote"></p>
-  </div>
-
-  <div class="section">
-    <h2>Tire & Rim Fitment Tool (Coming Next)</h2>
-    <p>This section will be interactive in the next build. You’re cleared to begin!</p>
+    <h2>CALL JOE - Tire & Rim Fitment Tool</h2>
+    <p>COMING SOON: Year / Make / Model selector + fitment logic.</p>
   </div>
 
   <script>
+    const callTextGoal = 20;
     let callCount = 0, textCount = 0, last = null, tires = 0, rims = 0;
+
+    const dailyTasks = {
+      "Sunday": ["2 Sales"],
+      "Monday": ["Clean Desk", "Follow-up with Saturday leads", "2 Sales"],
+      "Tuesday": [],
+      "Wednesday": ["Trash", "2 Sales"],
+      "Thursday": ["Wipe counters down", "2 Sales"],
+      "Friday": ["2 Sales", "Sweep"],
+      "Saturday": ["Trash", "2 Sales", "Clean Desk"]
+    };
 
     function track(type) {
       if (type === 'call') callCount++;
@@ -89,16 +94,10 @@
       document.getElementById('callCount').innerText = callCount;
       document.getElementById('textCount').innerText = textCount;
       const total = callCount + textCount;
-      document.getElementById('summaryTotal').innerText = total;
-      const now = new Date();
-      const hour = now.getHours();
-      if (total >= 20 && hour < 12) {
-        document.getElementById('statusText').innerHTML = '<span class="green">Done</span>';
-      } else if (hour >= 13 && total < 20) {
-        document.getElementById('statusText').innerHTML = '<span class="red">Not Done</span>';
-      } else {
-        document.getElementById('statusText').innerText = '';
-      }
+      const hour = new Date().getHours();
+      document.getElementById('statusText').innerHTML =
+        (total >= callTextGoal && hour < 12) ? '<span class="green">Done</span>' :
+        (hour >= 13 && total < callTextGoal) ? '<span class="red">Not Done</span>' : '';
     }
 
     function unit(type) {
@@ -119,7 +118,7 @@
     function addSnapshot() {
       const container = document.getElementById('snapshot-container');
       const div = document.createElement('div');
-      div.className = 'section';
+      div.className = 'snapshot';
       div.innerHTML = `
         <input placeholder="Customer Name"><br>
         <input placeholder="Phone Number"><br>
@@ -127,19 +126,48 @@
         <input placeholder="Product Info"><br>
         <input placeholder="Down Payment"><br>
         <textarea placeholder="Notes"></textarea><br>
-        <button onclick="printSnapshot()">Print Snapshot</button>
+        <button onclick="printSnapshot(this)">Print Snapshot</button>
         <button onclick="if(confirm('Are you sure?')) this.parentElement.remove()">Clear</button>
       `;
       container.appendChild(div);
     }
 
-    function printSnapshot() {
+    function printSnapshot(button) {
+      const snapshot = button.parentElement;
       const quoted = confirm("Was the customer quoted?");
       const sysQuoted = confirm("Was the customer systematically quoted?");
       const now = new Date().toLocaleString();
-      alert("Printed\nQuoted: " + quoted + "\nSystematic: " + sysQuoted + "\nTime: " + now);
-      window.print();
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write('<html><head><title>Print Snapshot</title></head><body>');
+      printWindow.document.write(snapshot.innerHTML);
+      printWindow.document.write("<p>Quoted: " + quoted + "<br>Systematic: " + sysQuoted + "<br>Printed: " + now + "</p>");
+      printWindow.document.write('</body></html>');
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
     }
+
+    function loadChecklist() {
+      const checklistDiv = document.getElementById("checklist");
+      checklistDiv.innerHTML = "";
+      const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+      const tasks = dailyTasks[today] || [];
+      tasks.forEach((task, i) => {
+        const id = `task-${i}`;
+        checklistDiv.innerHTML += `<label><input type="checkbox" id="${id}" onchange="checkAllTasks()"> ${task}</label><br>`;
+      });
+    }
+
+    function checkAllTasks() {
+      const checklistDiv = document.getElementById("checklist");
+      const checkboxes = checklistDiv.querySelectorAll("input[type=checkbox]");
+      const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+      const status = document.getElementById("tasksStatus");
+      status.innerHTML = allChecked ? "<span class='green'>All Tasks Completed</span>" : "";
+    }
+
+    loadChecklist();
   </script>
 </body>
 </html>
